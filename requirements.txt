@@ -1,0 +1,7 @@
+pandas>=2.0.0
+pinecone-client>=3.0.0
+pinecone-text>=0.1.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+flask>=2.3.0
+meilisearch>=0.27.0

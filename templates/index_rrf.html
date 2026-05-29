@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Product Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-box button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-box button:hover {
+            background: #5568d3;
+        }
+
+        .search-box button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .fusion-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .fusion-options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f5f5f5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+
+        .fusion-options input[type="radio"] {
+            cursor: pointer;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .badge {
+            font-size: 0.8em;
+            padding: 4px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-image .no-image {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+
+        .product-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            line-height: 1.3;
+            min-height: 2.6em;
+        }
+
+        .product-seller {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+        .product-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: 600;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .score-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .rrf-info {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #667eea;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .rank-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .fusion-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Product Search</h1>
+            <p>Search through our product catalog</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search products..." 
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="performSearch()">Search</button>
+            </div>
+
+            <div class="fusion-options">
+                <label>
+                    <input type="radio" name="fusion" value="weighted_rrf" checked>
+                    ⚖️ Weighted RRF
+                </label>
+                <label>
+                    <input type="radio" name="fusion" value="separate">
+                    📂 Separate Results
+                </label>
+            </div>
+        </div>
+
+        <div id="resultsContainer" class="results-container"></div>
+    </div>
+
+    <script>
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                alert('Please enter a search query');
+                return;
+            }
+
+            const fusionMethod = document.querySelector('input[name="fusion"]:checked').value;
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            resultsContainer.innerHTML = `
+                <div class="results-section">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Searching...</p>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        fusion_method: fusionMethod
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    resultsContainer.innerHTML = `
+                        <div class="results-section">
+                            <div class="error">${data.error}</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (fusionMethod === 'separate' && data.pinecone) {
+                    displaySeparateResults(data, resultsContainer);
+                } else if (data.results) {
+                    displayFusedResults(data, resultsContainer);
+                } else {
+                    throw new Error('Unexpected response format');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                resultsContainer.innerHTML = `
+                    <div class="results-section">
+                        <div class="error">Error: ${error.message}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function displayFusedResults(data, container) {
+            const results = data.results || [];
+            
+            if (results.length === 0) {
+                container.innerHTML = `
+                    <div class="results-section">
+                        <div class="empty-state">No products found. Try a different search.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const weights = data.weights || {};
+            const weightLabel = weights.pinecone !== undefined
+                ? `${Math.round(weights.pinecone * 100)}% Pinecone, ${Math.round(weights.meilisearch * 100)}% Meilisearch`
+                : '';
+
+            const html = `
+                <div class="results-section">
+                    <div class="section-title">
+                        ⚖️ Weighted RRF Results
+                        ${weightLabel ? `<span class="badge">${weightLabel}</span>` : ''}
+                    </div>
+                    <div class="rrf-info">
+                        Found ${results.length} product${results.length !== 1 ? 's' : ''} using Weighted Reciprocal Rank Fusion
+                    </div>
+                    <div class="results-grid">
+                        ${results.map((product, index) => createProductCard(product, index + 1)).join('')}
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function displaySeparateResults(data, container) {
+            const pineconeResults = data.pinecone || [];
+            const meilisearchResults = data.meilisearch || [];
+
+            let html = '';
+
+            if (pineconeResults.length > 0) {
+                html += `
+                    <div class="results-section">
+                        <div class="section-title">
+                            🔵 Pinecone (Semantic)
+                            <span class="badge">${pineconeResults.length}</span>
+                        </div>
+                        <div class="results-grid">
+                            ${pineconeResults.map((product, index) => createProductCard(product, index + 1, 'pinecone')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (meilisearchResults.length > 0) {
+                html += `
+                    <div class="results-section">
+                        <div class="section-title">
+                            🟢 Meilisearch (Full-Text)
+                            <span class="badge">${meilisearchResults.length}</span>
+                        </div>
+                        <div class="results-grid">
+                            ${meilisearchResults.map((product, index) => createProductCard(product, index + 1, 'meilisearch')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (pineconeResults.length === 0 && meilisearchResults.length === 0) {
+                html = `
+                    <div class="results-section">
+                        <div class="empty-state">No products found. Try a different search.</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        function createProductCard(product, rank, source = null) {
+            const imageUrl = product.image_url || '';
+            const imageHtml = imageUrl 
+                ? `<img src="${imageUrl}" alt="${product.title}" onerror="this.style.display='none'">`
+                : '<div class="no-image">📦 No Image</div>';
+
+            let scoreDisplay = '';
+            
+            if (product.rrf_score !== undefined) {
+                scoreDisplay = `<span class="score-badge">RRF: ${product.rrf_score.toFixed(4)}</span>`;
+            } else if (product.combined_score !== undefined) {
+                scoreDisplay = `<span class="score-badge">Score: ${product.combined_score.toFixed(4)}</span>`;
+            } else if (product.score !== undefined) {
+                scoreDisplay = `<span class="score-badge">Score: ${product.score}</span>`;
+            }
+
+            return `
+                <div class="product-card">
+                    <div class="product-image">
+                        ${imageHtml}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">${escapeHtml(product.title)}</div>
+                        <div class="product-seller">Seller: ${escapeHtml(product.seller || 'Unknown')}</div>
+                        <div class="product-score">
+                            <span class="rank-badge">#${rank}</span>
+                            ${scoreDisplay}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        document.getElementById('searchInput').focus();
+    </script>
+</body>
+</html>
