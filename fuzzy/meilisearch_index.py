@@ -61,7 +61,6 @@ for _, row in df.iterrows():
         'normalized_title' : normalize(original_title),
         'seller_name' : original_seller,
         'normalized_sellerName': normalize(original_seller),
-        'desc':normalize(row.get('description','') or '')
     })
 
 logger.info(f"Creating/updating Meilisearch index: {INDEX_NAME}")

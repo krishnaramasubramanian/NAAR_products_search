@@ -4,7 +4,7 @@ import re
 from vector_client import index
 from embeddings import generate_embedding
 from pathlib import Path
-
+from clean_description import clean_for_embedding
 ROOT = Path(__file__).resolve().parent.parent
 CSV_PATH = ROOT / "products.csv"
 
@@ -32,9 +32,15 @@ def strip_bulk_indicators(text):
     cleaned = re.sub(r'\s*-\s*$', '', cleaned)  # Remove trailing dashes
     
     return cleaned
-
+seen: set[str] = set()
 async def upsert_product(row):
+
+
     product_id = str(row["_id"])
+
+    if product_id in seen:
+        print(f"Skipped {product_id} (duplicate)")
+        return
     title = str(row.get("title", "") or "")
     description = str(row.get("description", "") or "")
     seller = str(row.get("sellerName", "") or "")
@@ -46,11 +52,12 @@ async def upsert_product(row):
     t = (title or "").strip()
     d = (description or "").strip()
     s = (subcategory or "").strip()
+    c = (category or "").strip()
     
     # Strip bulk indicators from title and description
     t = strip_bulk_indicators(t)
     d = strip_bulk_indicators(d)
-    
+    d = clean_for_embedding(d)
     # Skip if title becomes empty after stripping
     if not t:
         print(f"Skipped {product_id} (title empty after bulk removal)")
@@ -60,11 +67,15 @@ async def upsert_product(row):
     components = []
     if t:
         components.append(t)
+        components.append(t)
+        components.append(t)
     if d:
         components.append(f"Product Description: {d}")
     if s:
-        components.append(f"Category: {s}")
-    
+        components.append(f"Sub-Category: {s}")
+        components.append(s)
+    if c:
+        components.append(f"Category: {c}")
     # Join with a clear separator
     product_text = " | ".join(components)
     
@@ -89,6 +100,7 @@ async def upsert_product(row):
             }
         }]
     )
+    seen.add(product_id)
     print(f"Indexed {product_id}")
 
 async def main():

@@ -46,7 +46,7 @@ def api_search():
         
         # Get results from both sources
         logger.info(f"Calling pinecone_search with query: '{query}'")
-        pinecone_results = asyncio.run(pinecone_search(query, top_k=10, min_score=0.28))
+        pinecone_results = asyncio.run(pinecone_search(query, top_k=10, min_score=0.35))
         logger.info(f"Pinecone results count: {len(pinecone_results)}")
         logger.debug(f"Pinecone results: {pinecone_results}")
         
