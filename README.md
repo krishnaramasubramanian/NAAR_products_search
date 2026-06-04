@@ -71,13 +71,7 @@ The app expects `catalog_vocab.pkl` in the project root.
 python fuzzy/meilisearch_index.py
 ```
 
-**Pinecone** — generate embeddings and upsert vectors (can take a while; uses OpenAI):
-
-```bash
-cd vector_search
-python index_products.py
-cd ..
-```
+**Pinecone** — generate embeddings and upsert vectors 
 
 Skip  Pinecone indexing and use the default api key.
 
@@ -89,7 +83,7 @@ From the project root (with the virtual environment activated):
 python app_with_rrf.py
 ```
 
-Open [http://localhost:5000](http://localhost:5000) in your browser. Use the search UI to try different fusion methods (RRF, weighted, etc.).
+Open [http://localhost:5001](http://localhost:5001) in your browser. Use the search UI to try different fusion methods (RRF, weighted, etc.).
 
 ## What runs when you search
 
@@ -115,6 +109,6 @@ Open [http://localhost:5000](http://localhost:5000) in your browser. Use the sea
 |-------|----------------|
 | `FileNotFoundError: catalog_vocab.pkl` | Run [step 5](#5-build-query-correction-vocabulary) |
 | Meilisearch connection errors | Meilisearch running on port `7700`; re-run `fuzzy/meilisearch_index.py` |
-| Pinecone / OpenAI errors | `OPENAI_API_KEY` and `PINECONE_API_KEY` set; index `searchv2` exists |
+| Pinecone / OpenAI errors | `OPENAI_API_KEY` and `PINECONE_API_KEY` set; index `searchv3` exists |
 | Empty or poor results | Re-index Meilisearch and/or Pinecone; confirm `products.csv` is present |
 | Import errors for `rapidfuzz` | `pip install rapidfuzz` |
