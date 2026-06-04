@@ -9,7 +9,7 @@ load_dotenv()
 client = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
-EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_MODEL = "text-embedding-3-large"
 EMBEDDING_DIMENSION = 1536
 
 # Pinecone Configuration
@@ -17,7 +17,7 @@ pc = Pinecone(
     api_key= os.getenv("PINECONE_API_KEY")
 )
 
-INDEX_NAME = "searchv2"
+INDEX_NAME = "searchv3"
 HYBRID_INDEX_NAME = "text-search-hybrid"
 DIMENSION = 1536
 

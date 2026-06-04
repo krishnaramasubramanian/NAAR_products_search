@@ -54,33 +54,19 @@ async def upsert_product(row):
     s = (subcategory or "").strip()
     c = (category or "").strip()
     
-    # Strip bulk indicators from title and description
-    t = strip_bulk_indicators(t)
-    d = strip_bulk_indicators(d)
-    d = clean_for_embedding(d)
+
     # Skip if title becomes empty after stripping
     if not t:
         print(f"Skipped {product_id} (title empty after bulk removal)")
         return
     
     # Build a natural, structured sentence
-    components = []
-    if t:
-        components.append(t)
-        components.append(t)
-        components.append(t)
-    if d:
-        components.append(f"Product Description: {d}")
-    if s:
-        components.append(f"Sub-Category: {s}")
-        components.append(s)
-    if c:
-        components.append(f"Category: {c}")
-    # Join with a clear separator
-    product_text = " | ".join(components)
-    
-    if not product_text:
-        return
+    product_text = (
+    f"{t or ''} - {d or ''}. "
+    f"This is a part of {s or ''} collection "
+    f"in the {c or ''} category, "
+    f"sold by {seller or ''}."
+    )
     
     embedding = await generate_embedding(product_text)
     if not embedding:

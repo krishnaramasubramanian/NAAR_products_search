@@ -7,6 +7,7 @@ from vector_search.query import search as pinecone_search
 from fuzzy.meilisearch_search import search as meilisearch_search
 from rrf_utils import RRFusion
 from query_correction.query_corrector import correct_query
+import spacy
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -18,8 +19,7 @@ CLOUDFRONT_URL = "https://d1rr3f1zok8deh.cloudfront.net/uploads/products/"
 # Load products CSV for image filenames
 products_df = pd.read_csv('products.csv')
 products_dict = {str(row['_id']): row['fileName'] for _, row in products_df.iterrows()}
-
-
+nlp = spacy.load("en_core_web_sm")
 @app.route('/')
 def index():
     return render_template('index_rrf.html')
@@ -34,19 +34,27 @@ def api_search():
     if not query:
         return jsonify({'error': 'Query is required'}), 400
     
-    if len(query.split()) < 3:
+    '''if len(query.split()) < 3:
         logger.info(f"Query has < 3 words, applying correction. Original: '{query}'")
         query = correct_query(query)
         logger.info(f"After correction: '{query}'")
     else:
-        logger.info(f"Query has >= 3 words, skipping correction. Query: '{query}'")
+        logger.info(f"Query has >= 3 words, skipping correction. Query: '{query}'")'''
     
     try:
         logger.info(f"Query: {query}, Fusion method: {fusion_method}")
         
         # Get results from both sources
         logger.info(f"Calling pinecone_search with query: '{query}'")
-        pinecone_results = asyncio.run(pinecone_search(query, top_k=10, min_score=0.35))
+        doc = nlp(query)
+        boosted = []
+        for token in doc:
+            if token.pos_ in ["NOUN","PROPN"]:
+                boosted.extend([token.text] * 2)
+            else:
+                boosted.append(token.text)
+        query = " ".join(boosted)
+        pinecone_results = asyncio.run(pinecone_search(query, top_k=10, min_score=0.33))
         logger.info(f"Pinecone results count: {len(pinecone_results)}")
         logger.debug(f"Pinecone results: {pinecone_results}")
         
@@ -82,8 +90,8 @@ def api_search():
             fused_results = RRFusion.rrf([pinecone_data, meilisearch_data])
         
         elif fusion_method == 'weighted_rrf':
-            pinecone_weight = 0.2
-            meili_weight = 0.8
+            pinecone_weight = 0.65
+            meili_weight = 0.35
             
             fused_results = RRFusion.weighted_rrf(
                 [pinecone_data, meilisearch_data],
@@ -105,6 +113,11 @@ def api_search():
                     return str(int(pid))
                 return str(pid)
             
+            def get_image_url(product_id):
+                filename = products_dict.get(get_product_id_str(product_id), '')
+                filename = str(filename) if filename and str(filename) != 'nan' else ''
+                return CLOUDFRONT_URL + filename if filename else ''
+            
             return jsonify({
                 'fusion_method': 'separate',
                 'pinecone': [
@@ -112,7 +125,7 @@ def api_search():
                         'title': r['title'],
                         'seller': r['seller'],
                         'product_id': r['product_id'],
-                        'image_url': CLOUDFRONT_URL + products_dict.get(get_product_id_str(r['product_id']), ''),
+                        'image_url': get_image_url(r['product_id']),
                         'score': round(r['score'], 2)
                     } for r in pinecone_data
                 ],
@@ -121,7 +134,7 @@ def api_search():
                         'title': r['title'],
                         'seller': r['seller'],
                         'product_id': r['product_id'],
-                        'image_url': CLOUDFRONT_URL + products_dict.get(get_product_id_str(r['product_id']), ''),
+                        'image_url': get_image_url(r['product_id']),
                         'score': round(r['score'], 2)
                     } for r in meilisearch_data
                 ]
@@ -146,6 +159,8 @@ def api_search():
                 else:
                     product_id_str = str(product_id)
                 filename = products_dict.get(product_id_str, '')
+                # Ensure filename is a string and not NaN
+                filename = str(filename) if filename and str(filename) != 'nan' else ''
                 image_url = CLOUDFRONT_URL + filename if filename else ''
                 
                 result_item = {
@@ -178,4 +193,4 @@ def api_search():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

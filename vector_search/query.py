@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class VectorSearchConfig:
-    index_name: str = "searchv2"
+    index_name: str = "searchv3"
     top_k: int = 10
     candidate_k: int = 50
     min_score: float = 0.5
