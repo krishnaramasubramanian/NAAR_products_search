@@ -6,8 +6,8 @@ Hybrid product search demo that combines **Pinecone** vector search, **Meilisear
 
 - **Python 3.10+** (3.11 recommended)
 - **Docker** (for Meilisearch), or a Meilisearch instance at `http://localhost:7700`
-- **OpenAI API key** (embeddings via `text-embedding-3-small`)
-- **Pinecone API key**(use same api key as mentioned in the script) and an index named `searchv2` (see [Indexing](#indexing-optional))
+- **OpenAI API key** (embeddings via `text-embedding-3-large`)
+- **Pinecone API key**(use same api key as mentioned in the script) and an index named `searchv3` (see [Indexing](#indexing-optional))
 - **`products.csv`** in the project root (included in this repo)
 
 ## Quick start
